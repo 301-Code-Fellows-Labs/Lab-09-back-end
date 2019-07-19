@@ -60,9 +60,10 @@ function deleteByLocationId(table, city) {
 
 const timeouts = {
   weathers: 15 * 1000
+
 }
 
-// Models
+/* #region ==================== Location =================================== */
 function Location(query, res) {
   this.tableName = 'locations';
   this.search_query = query;
@@ -99,70 +100,6 @@ Location.prototype = {
   }
 };
 
-function Weather(day) {
-  this.tableName = 'weathers';
-  this.forecast = day.summary;
-  this.time = new Date(day.time * 1000).toString().slice(0, 15);
-  this.created_at = Date.now();
-}
-
-Weather.tableName = 'weathers';
-Weather.lookup = lookup;
-Weather.deleteByLocationId = deleteByLocationId;
-
-Weather.prototype = {
-  save: function (location_id) {
-    const SQL = `INSERT INTO ${this.tableName} (forecast, time, created_at, location_id) VALUES ($1, $2, $3, $4);`;
-    const values = [this.forecast, this.time, this.created_at, location_id];
-
-    client.query(SQL, values);
-  }
-};
-
-function Event(event) {
-  this.tableName = 'events';
-  this.link = event.url;
-  this.name = event.name.text;
-  this.event_date = new Date(event.start.local).toString().slice(0, 15);
-  this.summary = event.summary;
-}
-
-Event.tableName = 'events';
-Event.lookup = lookup;
-
-Event.prototype = {
-  save: function (location_id) {
-    const SQL = `INSERT INTO ${this.tableName} (link, name, event_date, summary, location_id) VALUES ($1, $2, $3, $4, $5);`;
-    const values = [this.link, this.name, this.event_date, this.summary, location_id];
-
-    client.query(SQL, values);
-  }
-};
-
-function Movie (res) {
-  this.tableName = 'movies';
-  this.title = res.title;
-  this.overview = res.overview;
-  this.average_votes = res.vote_average;
-  this.total_votes = res.vote_count;
-  this.image_url = 'https://image.tmdb.org/t/p/w185/'+res.poster_path;
-  this.popularity = res.popularity;
-  this.released_on = res.release_date;
-}
-
-
-Movie.tableName = 'movies';
-Movie.lookup = lookup;
-
-Movie.prototype = {
-  save: function (location_id) {
-    const SQL = `INSERT INTO ${this.tableName} (title, overview, average_votes, total_votes, image_url, popularity, released_on, location_id ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`;
-    const values = [this.title, this.overview, this.average_votes, this.total_votes, this.image_url, this.popularity, this.released_on, location_id];
-
-    client.query(SQL, values);
-  }
-};
-
 function getLocation(request, response) {
   Location.lookupLocation({
     tableName: Location.tableName,
@@ -186,6 +123,30 @@ function getLocation(request, response) {
     }
   });
 }
+
+/* #endregion */
+
+/* #region ==================== Weather =================================== */
+
+function Weather(day) {
+  this.tableName = 'weathers';
+  this.forecast = day.summary;
+  this.time = new Date(day.time * 1000).toString().slice(0, 15);
+  this.created_at = Date.now();
+}
+
+Weather.tableName = 'weathers';
+Weather.lookup = lookup;
+Weather.deleteByLocationId = deleteByLocationId;
+
+Weather.prototype = {
+  save: function (location_id) {
+    const SQL = `INSERT INTO ${this.tableName} (forecast, time, created_at, location_id) VALUES ($1, $2, $3, $4);`;
+    const values = [this.forecast, this.time, this.created_at, location_id];
+
+    client.query(SQL, values);
+  }
+};
 
 function getWeather(request, response) {
   Weather.lookup({
@@ -220,6 +181,30 @@ function getWeather(request, response) {
     }
   });
 }
+/* #endregion */
+
+/* #region ====================Events=================================== */
+
+function Event(event) {
+  this.tableName = 'events';
+  this.link = event.url;
+  this.name = event.name.text;
+  this.event_date = new Date(event.start.local).toString().slice(0, 15);
+  this.summary = event.summary;
+}
+
+Event.tableName = 'events';
+Event.lookup = lookup;
+
+Event.prototype = {
+  save: function (location_id) {
+    const SQL = `INSERT INTO ${this.tableName} (link, name, event_date, summary, location_id) VALUES ($1, $2, $3, $4, $5);`;
+    const values = [this.link, this.name, this.event_date, this.summary, location_id];
+
+    client.query(SQL, values);
+  }
+};
+
 
 function getEvents(request, response) {
   Event.lookup({
@@ -248,6 +233,32 @@ function getEvents(request, response) {
     }
   });
 }
+/* #endregion */
+
+/* #region ====================Movies=================================== */
+function Movie (res) {
+  this.tableName = 'movies';
+  this.title = res.title;
+  this.overview = res.overview;
+  this.average_votes = res.vote_average;
+  this.total_votes = res.vote_count;
+  this.image_url = 'https://image.tmdb.org/t/p/w185/'+res.poster_path;
+  this.popularity = res.popularity;
+  this.released_on = res.release_date;
+}
+
+
+Movie.tableName = 'movies';
+Movie.lookup = lookup;
+
+Movie.prototype = {
+  save: function (location_id) {
+    const SQL = `INSERT INTO ${this.tableName} (title, overview, average_votes, total_votes, image_url, popularity, released_on, location_id ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`;
+    const values = [this.title, this.overview, this.average_votes, this.total_votes, this.image_url, this.popularity, this.released_on, location_id];
+
+    client.query(SQL, values);
+  }
+};
 
 function getMovies(request, response) {
   Event.lookup({
@@ -275,8 +286,9 @@ function getMovies(request, response) {
     }
   });
 }
+/* #endregion */
 
-//====================YELP===================================
+/* #region ====================YELP=================================== */
 
 function Yelp (res) {
   this.tableName = 'yelp';
@@ -292,15 +304,15 @@ Yelp.lookup = lookup;
 
 Yelp.prototype = {
   save: function (location_id) {
-    const SQL = `INSERT INTO ${this.tableName} (name, image_url, price, rating, url, location_id ) VALUES ($1, $2, $3, $4, $5);`;
-    const values = [this.name, this.image_url, this.price, this.rating, this.url, location_id];
+    const SQL = `INSERT INTO ${this.tableName} (name, url, image_url, rating, price, location_id ) VALUES ($1, $2, $3, $4, $5, $6);`;
+    const values = [this.name, this.url, this.image_url, this.rating, this.price, location_id];
 
     client.query(SQL, values);
   }
 };
 
 function getYelp(request, response) {
-  Event.lookup({
+  Yelp.lookup({
     tableName: Yelp.tableName,
 
     location: request.query.data.id,
@@ -317,7 +329,6 @@ function getYelp(request, response) {
         .then(result => {
           const yelpEnties = result.body.businesses.map(ylp => {
             const yelps = new Yelp(ylp);
-            console.log('YELPS', yelps);
             yelps.save(request.query.data.id);
             return yelps;
           }).slice(0,2);
@@ -329,4 +340,5 @@ function getYelp(request, response) {
   });
 }
 
+/* #endregion */
 
